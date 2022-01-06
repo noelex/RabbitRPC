@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<Company></Company>
+		<Authors>noelex</Authors>
+		<PackageVersion>1.0.0-preview-2</PackageVersion>
+		<PackageProjectUrl>https://github.com/noelex/RabbitRPC</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/noelex/RabbitRPC.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\RabbitRPC\RabbitRPC.csproj" />
+	</ItemGroup>
+
+</Project>

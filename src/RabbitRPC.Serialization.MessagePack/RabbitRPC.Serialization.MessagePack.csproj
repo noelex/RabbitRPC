@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Company></Company>
+		<Authors>noelex</Authors>
+		<PackageVersion>1.0.0-preview-2</PackageVersion>
+		<PackageProjectUrl>https://github.com/noelex/RabbitRPC</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/noelex/RabbitRPC.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MessagePack" Version="2.3.85" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\RabbitRPC\RabbitRPC.csproj" />
+	</ItemGroup>
+
+</Project>
