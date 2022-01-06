@@ -10,7 +10,7 @@ RabbitRPC doesn't rely on any microservice infrastructure or development tool. B
 
 ## Strongly-typed RPC services and clients
 RabbitRPC allows you to setup RPC services inside your ASP.NET Core or standalone console applications with just a few lines of code, zero configuration.
-```
+```csharp
 class TestService : RabbitService, ITestService
 {
     [RetryOnConcurrencyError]
@@ -24,7 +24,7 @@ class TestService : RabbitService, ITestService
 }
 ```
 Then you can access the service with a strongly-typed client:
-```
+```csharp
 class ClientApp
 {
     private readonly ITestService _testService;
@@ -62,12 +62,12 @@ Sometimes you may want to have shared states across multiple replicas. You can a
 RabbitRPC also provides a simple state storage interface which allows you to access different state storage providers. The interface supports transactions and optimistic concurrency control. Currently, only in-memory and SQLite providers are implemented for developement and test purpose.
 
 To access shared states inside your RPC serivce, simply use `StateContext` property:
-```
+```csharp
 await StateContext.GetAsync<long>("counter", cancellationToken);
 ```
 
 RabbitRPC uses in-memory provider by default. To use a different provider, you need to register the state context on startup with:
-```
+```csharp
 services.AddSqliteStateContext("Data Source=states.db");
 ```
 
@@ -75,11 +75,11 @@ services.AddSqliteStateContext("Data Source=states.db");
 RabbitRPC provides a simple yet powerful strongly-typed event bus, which allows you to publish and subcribe distributed events with low coding overhead.
 
 To publish an event, simply call `IRabbitEventBus.Publish` and the event will be sent to all subscribers.
-```
+```csharp
 EventBus.Publish(new MyEvent());
 ```
 To subscribe a event, call `IRabbitEventBus.Observe<T>` to retrieve an `IObservable<T>` instance for the specific type of event. And you can subscribe the event by calling `IObservable<T>.Subscribe` to receive strongly-typed event objects.
-```
+```csharp
 EventBus.Observe<MyEvent>().Subscribe(...);
 ```
 Since the events are streamed through `IObservable<T>`, you can also use [Reactive Extensions](https://github.com/dotnet/reactive) to manipulate and consume the event stream.
@@ -89,7 +89,7 @@ RabbitRPC implements a distributed durable work queue to support background batc
 You can run the work item handler along with the RPC service, or in a seperate application.
 
 To utilize background batch processing, you need to define a handler:
-```
+```csharp
 class PrintJobHandler : IWorkItemHandler<PrintJob>
 {
     public async Task ProcessAsync(ReadOnlyMemory<WorkItem<PrintJob>> items, CancellationToken cancellationToken)
@@ -103,7 +103,7 @@ class PrintJobHandler : IWorkItemHandler<PrintJob>
 }
 ```
 Then register this handler with work queue:
-```
+```csharp
 services.AddWorkQueue(x=>x.AddHandler<PrintJob, PrintJobHandler>(options=>
 {
     options.ConcurrencyMode = BatchConcurrencyMode.Shared;
@@ -112,7 +112,7 @@ services.AddWorkQueue(x=>x.AddHandler<PrintJob, PrintJobHandler>(options=>
 }));
 ```
 Once the handler is up and running, you can dispatch works by a single line of code:
-```
+```csharp
 _workQueue.Post(new PrintJob($"Hello world!"));
 ```
 Similar to RPC services, work item handlers also support load balancing by default. You can have multiple work item handler which handles same work item type running in different processes or computers.
