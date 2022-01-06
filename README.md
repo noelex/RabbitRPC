@@ -132,7 +132,7 @@ dotnet add package RabbitRPC.Serialization.MessagePack --version 1.0.0-preview-2
 ```
 To share states between replicas running on the same computer, you'll need to install a SQLite state storage provider:
 ```
-paket add RabbitRPC.States.Sqlite --version 1.0.0-preview-2
+dotnet add package RabbitRPC.States.Sqlite --version 1.0.0-preview-2
 ```
 Please refer `samples` diretory for detailed usage information.
 To run the applications in `samples`, you'll need a working RabbitMQ instance.
