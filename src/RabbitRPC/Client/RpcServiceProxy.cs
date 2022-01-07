@@ -73,7 +73,7 @@ namespace RabbitRPC.Client
                 throw new InvalidOperationException($"Failed to invoke proxy method '{targetMethod.DeclaringType.FullName}.{targetMethod.Name}'. Proxy is not initialized yet.");
             }
 
-            var serviceName= targetMethod.DeclaringType.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? targetMethod.DeclaringType.Name;
+            var serviceName= targetMethod.DeclaringType.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? targetMethod.DeclaringType.FullName;
             var actionName = targetMethod.GetCustomAttribute<ActionAttribute>()?.Name ?? targetMethod.Name;
 
             var queueName = "RabbitRPC:" + serviceName;

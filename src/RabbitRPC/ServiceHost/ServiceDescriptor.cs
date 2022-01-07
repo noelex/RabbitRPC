@@ -32,7 +32,7 @@ namespace RabbitRPC.ServiceHost
             }
 
             Actions = new ReadOnlyDictionary<string, ActionDescriptor>(actions);
-            Name = serviceMethodMapping.InterfaceType.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? serviceMethodMapping.InterfaceType.Name;
+            Name = serviceMethodMapping.InterfaceType.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? serviceMethodMapping.InterfaceType.FullName;
             AddFilters(serviceMethodMapping.TargetType.GetCustomAttributes().OfType<IFilterMetadata>());
         }
 
