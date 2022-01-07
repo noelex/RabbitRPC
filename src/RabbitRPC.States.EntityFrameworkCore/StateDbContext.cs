@@ -1,17 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RabbitRPC.States.Sqlite.Models;
+using RabbitRPC.States.EntityFrameworkCore.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RabbitRPC.States.Sqlite
+namespace RabbitRPC.States.EntityFrameworkCore
 {
     internal class StateDbContext:DbContext
     {
         public StateDbContext(DbContextOptions<StateDbContext> options):
             base(options)
         {
-
+    
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

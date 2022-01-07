@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace RabbitRPC.States.Sqlite.Migrations
+namespace RabbitRPC.States.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(StateDbContext))]
     partial class StateDbContextModelSnapshot : ModelSnapshot

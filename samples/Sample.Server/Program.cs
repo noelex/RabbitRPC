@@ -2,11 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using RabbitRPC.ServiceHost;
 using RabbitRPC.ServiceHost.Filters;
 using RabbitRPC.WorkQueues;
-using ServiceLib;
-using ServiceLib.WorkItems;
+using Sample.Shared;
 
 static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
@@ -14,7 +14,8 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         {
             services.AddMessagePackSerializationProvider();
             services.AddRabbitMQConnectionProvider("amqp://guest:guest@localhost/");
-            services.AddSqliteStateContext("Data Source=states.db");
+            services.AddEntityFrameworkCoreStateContext(options => options.UseSqlite("Data Source=states.db"));
+            //services.AddEntityFrameworkCoreStateContext(options => options.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Database=RabbitRPCStates"));
             services.AddRabbitServiceHost(options =>
             {
                 options.AddServicesFromAssembly();
@@ -81,7 +82,7 @@ class TestService : RabbitService, ITestService
         var newV = v.Value + 1;
         await StateContext.PutAsync("longValue", newV, v.Version, cancellationToken);
 
-        _workQueue.Enqueue(new PrintJob($"Current counter is {v.Value} (v={v.Version})."));
+        _workQueue.Post(new PrintJob($"Current counter is {v.Value} (v={v.Version})."));
 
         return newV;
     }
@@ -94,7 +95,7 @@ class TestService : RabbitService, ITestService
         var newV = v.Value - 1;
         await StateContext.PutAsync("longValue", newV, v.Version, cancellationToken);
 
-        _workQueue.Enqueue(new PrintJob($"Current counter is {v.Value} (v={v.Version})."));
+        _workQueue.Post(new PrintJob($"Current counter is {v.Value} (v={v.Version})."));
 
         return newV;
     }

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitRPC;
-using ServiceLib;
+using Sample.Shared;
 using System.Diagnostics;
 
 static IHostBuilder CreateHostBuilder(string[] args) =>

@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RabbitRPC.States.Sqlite
+namespace RabbitRPC.States.EntityFrameworkCore
 {
-    internal class SqliteStateTransaction : ITransaction
+    internal class EFStateTransaction : ITransaction
     {
         private readonly IDbContextTransaction _underlyingTransaction;
 
-        public SqliteStateTransaction(IDbContextTransaction underlyingTransaction)
+        public EFStateTransaction(IDbContextTransaction underlyingTransaction)
         {
             _underlyingTransaction = underlyingTransaction;
         }

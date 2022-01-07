@@ -1,6 +1,6 @@
 ﻿using RabbitRPC;
 
-namespace ServiceLib
+namespace Sample.Shared
 {
     public interface ITestService : IRabbitService
     {
@@ -39,5 +39,12 @@ namespace ServiceLib
     public class ClientEvent
     {
 
+    }
+
+    public class PrintJob
+    {
+        public PrintJob(string text) => Text = text;
+
+        public string Text { get; }
     }
 }

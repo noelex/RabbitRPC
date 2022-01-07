@@ -3,10 +3,8 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RabbitRPC.States.Sqlite;
 
-namespace RabbitRPC.States.Sqlite.Migrations
+namespace RabbitRPC.States.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(StateDbContext))]
     [Migration("20211230014345_CreateDb")]

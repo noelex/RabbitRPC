@@ -19,7 +19,7 @@ namespace RabbitRPC.ServiceHost.Filters
 
         public override void OnActionExecuted(IActionExecutedContext context)
         {
-            if (context.Exception is ConcurrencyException)
+            if (context.Exception is ConcurrencyException && context.CallContext.ExecutionId <= MaxRetries)
             {
                 context.UnhandledExceptionHandlingStrategy = ExceptionHandlingStrategy.ReExecute;
             }
