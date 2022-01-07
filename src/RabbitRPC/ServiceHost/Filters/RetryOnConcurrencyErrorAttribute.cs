@@ -1,8 +1,6 @@
-﻿using RabbitRPC.States;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Runtime.CompilerServices;
-using System.Text;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace RabbitRPC.ServiceHost.Filters
@@ -17,8 +15,6 @@ namespace RabbitRPC.ServiceHost.Filters
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class RetryOnConcurrencyErrorAttribute : ActionFilterAttribute
     {
-        private readonly Random _random = new Random();
-
         public int MaximumRetries { get; set; } = 10;
 
         /// <summary>
@@ -48,6 +44,9 @@ namespace RabbitRPC.ServiceHost.Filters
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int CalculateBackoffTime(int n) =>  Math.Min((int)Math.Pow(2, n - 1) * ScaleFactor + _random.Next(MaximumJitter), MaximumBackoffTime);
+        private int CalculateBackoffTime(int n) => Math.Min(
+            (int)Math.Pow(2, n - 1) * ScaleFactor + 
+                MaximumJitter <= 0 ? 0 : RandomNumberGenerator.GetInt32(MaximumJitter),
+            MaximumBackoffTime);
     }
 }
