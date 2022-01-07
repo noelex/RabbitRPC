@@ -15,7 +15,7 @@ namespace RabbitRPC.WorkQueues
     {
         private const string DefaultExchangeName = "RabbitRPC.WorkQueue";
 
-        private readonly RabbitEventBus _eventBus;
+        private readonly IHostedEventBus _eventBus;
         private readonly WorkQueueOptions _options;
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<string, HandlerSpec> _handlers;
@@ -23,12 +23,11 @@ namespace RabbitRPC.WorkQueues
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public RabbitWorkQueue(WorkQueueOptions options, 
-            IRabbitMQConnectionProvider connectionProvider, IMessageSerializationProvider serializationProvider, IServiceProvider serviceProvider)
+        public RabbitWorkQueue(WorkQueueOptions options, IServiceProvider serviceProvider, IHostedEventBusFactory hostedEventBusFactory)
         {
             _options = options;
             _serviceProvider = serviceProvider;
-            _eventBus = new RabbitEventBus(connectionProvider, serializationProvider, DefaultExchangeName, true);
+            _eventBus = hostedEventBusFactory.CreateHostedEventBus(DefaultExchangeName, true);
 
             _handlers = _options.WorkItemTypes.ToDictionary(x => x.FullName,
                 x => new HandlerSpec(x, typeof(IWorkItemHandler<>).MakeGenericType(x),

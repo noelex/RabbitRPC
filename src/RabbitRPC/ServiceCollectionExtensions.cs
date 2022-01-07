@@ -79,6 +79,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (services.TryAddSingleton<RabbitEventBus>() && services.TryAddSingleton<IRabbitEventBus>(sp => sp.GetRequiredService<RabbitEventBus>()))
             {
+                services.AddSingleton<IHostedEventBusFactory, HostedEventBusFactory>();
                 services.AddHostedService(x => x.GetRequiredService<RabbitEventBus>());
             }
             return services;

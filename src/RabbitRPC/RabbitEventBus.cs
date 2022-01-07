@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace RabbitRPC
 {
-    public class RabbitEventBus : IRabbitEventBus, IHostedService
+    internal class RabbitEventBus : IHostedEventBus
     {
         private const string DefaultExchangeName = "RabbitRPC.EventBus";
 
@@ -26,10 +26,8 @@ namespace RabbitRPC
         private IBasicProperties? _defaultHeader;
 
         public RabbitEventBus(IRabbitMQConnectionProvider connectionProvider, IMessageSerializationProvider messageSerializationProvider)
+            :this(connectionProvider, messageSerializationProvider, DefaultExchangeName, false, false)
         {
-            _bodySerializer = messageSerializationProvider.CreateMessageBodySerializer();
-            _connectionProvider = connectionProvider;
-            _exchangeName = DefaultExchangeName;
         }
 
         internal RabbitEventBus(IRabbitMQConnectionProvider connectionProvider,
@@ -37,6 +35,7 @@ namespace RabbitRPC
         {
             _bodySerializer = messageSerializationProvider.CreateMessageBodySerializer();
             _connectionProvider = connectionProvider;
+
             _exchangeName = exchangeName;
             _durable = durable;
             _autoDelete = autoDelete;
