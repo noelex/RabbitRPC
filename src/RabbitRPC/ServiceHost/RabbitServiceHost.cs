@@ -386,7 +386,7 @@ namespace RabbitRPC.ServiceHost
             {
                 
                 filters.Not<IAsyncActionFilter>().Invoke<IActionFilter>(x => x.OnActionExecuting(executingContext), _logger, nameof(IActionFilter.OnActionExecuting));
-                _logger.LogDebug($"Executing action method {actionContext.ServiceDescriptor.Name}.{actionContext.ActionDescriptor.MethodInfo.Name}.");
+                _logger.LogDebug($"Executing action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name}.");
 
                 var stopwatch = Stopwatch.StartNew();
 
@@ -423,7 +423,7 @@ namespace RabbitRPC.ServiceHost
 
                 stopwatch.Stop();
 
-                _logger.LogDebug($"Executed action method {actionContext.ServiceDescriptor.Name}.{actionContext.ActionDescriptor.MethodInfo.Name} " +
+                _logger.LogDebug($"Executed action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name} " +
                     $"in {stopwatch.Elapsed.TotalMilliseconds:F4}ms. - Exception: {executedContext!.Exception?.GetType()?.Name?? "null"}, Result: {result}");
                 filters.Not<IAsyncActionFilter>().Invoke<IActionFilter>(x => x.OnActionExecuted(executedContext), _logger, nameof(IActionFilter.OnActionExecuted));
 

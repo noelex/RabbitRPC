@@ -9,7 +9,7 @@ namespace RabbitRPC.ServiceHost
 {
     public class ActionDescriptor
     {
-        public ActionDescriptor(MethodInfo methodInfo)
+        public ActionDescriptor(MethodInfo methodInfo, MethodInfo interfaceMethod)
         {
             if(typeof(Task).IsAssignableFrom( methodInfo.ReturnType) ||
                 methodInfo.ReturnType==typeof(ValueTask) ||
@@ -25,6 +25,7 @@ namespace RabbitRPC.ServiceHost
             AddFilters(methodInfo.GetCustomAttributes().OfType<IFilterMetadata>());
 
             Parameters = methodInfo.GetParameters().Select(x=>new ParameterDescriptor(x)).ToList();
+            Name = interfaceMethod.GetCustomAttribute<ActionAttribute>()?.Name ?? interfaceMethod.Name;
         }
 
         private void AddFilters(IEnumerable<IFilterMetadata> filters)
@@ -41,6 +42,6 @@ namespace RabbitRPC.ServiceHost
 
         public IList<FilterDescriptor> Filters { get; } = new List<FilterDescriptor>();
 
-        public string Name => MethodInfo.Name;
+        public string Name {get; private set;}
     }
 }

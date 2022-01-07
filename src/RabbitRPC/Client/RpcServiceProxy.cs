@@ -73,7 +73,10 @@ namespace RabbitRPC.Client
                 throw new InvalidOperationException($"Failed to invoke proxy method '{targetMethod.DeclaringType.FullName}.{targetMethod.Name}'. Proxy is not initialized yet.");
             }
 
-            var queueName = "RabbitRPC:" + targetMethod.DeclaringType.FullName;
+            var serviceName= targetMethod.DeclaringType.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? targetMethod.DeclaringType.Name;
+            var actionName = targetMethod.GetCustomAttribute<ActionAttribute>()?.Name ?? targetMethod.Name;
+
+            var queueName = "RabbitRPC:" + serviceName;
 
             var request = _messageBodyFactory!.CreateRequest(targetMethod.DeclaringType.FullName, targetMethod.Name, args.Length, null);
             var parameters = targetMethod.GetParameters();
@@ -101,7 +104,7 @@ namespace RabbitRPC.Client
             var header = _channel!.CreateBasicProperties();
             header.CorrelationId = correlationId;
             header.ReplyTo = _responseQueue!;
-            header.Type = targetMethod.Name;
+            header.Type = actionName;
             _channel.BasicPublish("", queueName, true, header, data);
 
             var reg = cancellableTokenSource.Token.Register(() =>
@@ -110,7 +113,7 @@ namespace RabbitRPC.Client
 
                 header.CorrelationId = correlationId;
                 header.Type = "Cancellation";
-                _channel.BasicPublish(DefaultManagementExchangeName, targetMethod.DeclaringType.FullName, basicProperties: header);
+                _channel.BasicPublish(DefaultManagementExchangeName, serviceName, basicProperties: header);
             });
 
             var callContext = new CallContext

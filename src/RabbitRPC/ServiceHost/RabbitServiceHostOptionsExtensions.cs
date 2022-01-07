@@ -34,7 +34,7 @@ namespace RabbitRPC.ServiceHost
 
             var serviceInterface = serviceInterfaces[0];
 
-            var name = serviceInterface.FullName;
+            var name = serviceInterface.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? serviceInterface.FullName;
 
             if (options.ServiceDescriptors.ContainsKey(name))
             {

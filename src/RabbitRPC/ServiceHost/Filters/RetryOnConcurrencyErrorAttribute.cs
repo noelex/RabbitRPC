@@ -32,7 +32,7 @@ namespace RabbitRPC.ServiceHost.Filters
         public int MaximumJitter { get; set; } = 1000;
 
         /// <summary>
-        /// Scale factor (ms) applied to the exponential backoff value before adding jitter.
+        /// Scale factor (ms) applied to the exponential backoff value before adding jitter delay time.
         /// </summary>
         public int ScaleFactor { get; set; } = 100;
 

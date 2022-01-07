@@ -21,14 +21,16 @@ CreateHostBuilder(args).Build().Run();
 class ConsoleServiceHost : IHostedService, IObserver<ServerEvent>
 {
     private readonly ITestService _testService;
+    private readonly IChatService _chatService;
     private readonly CancellationTokenSource _cts = new CancellationTokenSource();
     private readonly IRabbitEventBus _eventBus;
     private readonly ILogger _logger;
 
-    public ConsoleServiceHost(ITestService testService, IRabbitEventBus eventBus, ILogger<ConsoleServiceHost> logger)
+    public ConsoleServiceHost(ITestService testService, IChatService chatService, IRabbitEventBus eventBus, ILogger<ConsoleServiceHost> logger)
     {
         _eventBus = eventBus;
         _testService = testService;
+        _chatService = chatService;
         _logger = logger;
 
         eventBus.Observe<ServerEvent>().Subscribe(this);
@@ -139,7 +141,7 @@ class ConsoleServiceHost : IHostedService, IObserver<ServerEvent>
                 }
                 else
                 {
-                    _logger.LogInformation(await _testService.HelloAsync(msg!, cancellationToken));
+                    _logger.LogInformation(await _chatService.HelloAsync(msg!, cancellationToken));
                 }
             }
             catch(Exception ex)
@@ -149,3 +151,5 @@ class ConsoleServiceHost : IHostedService, IObserver<ServerEvent>
         }
     }
 }
+
+

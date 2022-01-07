@@ -22,7 +22,8 @@ namespace RabbitRPC.ServiceHost
 
                 if (!im.IsSpecialName)
                 {
-                    actions.Add(im.Name, new ActionDescriptor(tm));
+                    var desc = new ActionDescriptor(tm, im);
+                    actions.Add(desc.Name, desc);
                 }
                 else
                 {
@@ -31,6 +32,7 @@ namespace RabbitRPC.ServiceHost
             }
 
             Actions = new ReadOnlyDictionary<string, ActionDescriptor>(actions);
+            Name = serviceMethodMapping.InterfaceType.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? serviceMethodMapping.InterfaceType.Name;
             AddFilters(serviceMethodMapping.TargetType.GetCustomAttributes().OfType<IFilterMetadata>());
         }
 

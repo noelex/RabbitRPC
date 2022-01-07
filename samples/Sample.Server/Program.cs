@@ -74,7 +74,7 @@ class TestService : RabbitService, ITestService
         await StateContext.PutAsync("enumState", e);
     }
 
-    [RetryOnConcurrencyError(ScaleFactor = 100)]
+    [RetryOnConcurrencyError]
     public async Task<long> IncrementAsync(int delay, CancellationToken cancellationToken = default)
     {
         await Task.Delay(delay, cancellationToken);
@@ -87,7 +87,7 @@ class TestService : RabbitService, ITestService
         return newV;
     }
 
-    [RetryOnConcurrencyError(ScaleFactor = 100)]
+    [RetryOnConcurrencyError]
     public async Task<long> DecrementAsync(int delay, CancellationToken cancellationToken = default)
     {
         await Task.Delay(delay, cancellationToken);
@@ -98,5 +98,13 @@ class TestService : RabbitService, ITestService
         _workQueue.Post(new PrintJob($"Current counter is {v.Value} (v={v.Version})."));
 
         return newV;
+    }
+}
+
+class ChatService : IChatService
+{
+    public Task<string> HelloAsync(string name, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult($"Hello {name}!");
     }
 }

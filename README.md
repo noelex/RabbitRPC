@@ -11,15 +11,17 @@ RabbitRPC doesn't rely on any microservice infrastructure or development tool. B
 ## Strongly-typed RPC services and clients
 RabbitRPC allows you to setup RPC services inside your ASP.NET Core or standalone console applications with just a few lines of code, zero configuration.
 ```csharp
-class TestService : RabbitService, ITestService
+
+public interface IChatService　:　IRabbitService
 {
-    [RetryOnConcurrencyError]
-    public async Task<long> IncrementAsync(CancellationToken cancellationToken = default)
+    Task<string> HelloAsync(string name, CancellationToken cancellationToken = default);
+}
+
+class ChatService : IChatService
+{
+    public Task<string> HelloAsync(string name, CancellationToken cancellationToken = default)
     {
-        var v = await StateContext.GetAsync<long>("counter", cancellationToken);
-        var newV = v.Value + 1;
-        await StateContext.PutAsync("counter", newV, v.Version);
-        return newV;
+        return Task.FromResult($"Hello {name}!");
     }
 }
 ```
@@ -27,17 +29,17 @@ Then you can access the service with a strongly-typed client:
 ```csharp
 class ClientApp
 {
-    private readonly ITestService _testService;
+    private readonly IChatService _chatService;
 
-    public ClientApp(ITestService service)
+    public ClientApp(IChatService service)
     {
-        _testService = service;
+        _chatService = service;
     }
 
-    publice async Task IncrementAndPrintAsync(CancellationToken cancellationToken)
+    publice async Task SayHelloAsync(CancellationToken cancellationToken)
     {
-        var counter = await _testService.IncrementAsync(cancellationToken);
-        Console.WriteLine(counter);
+        var greeting = await _chatService.HelloAsync("World", cancellationToken);
+        Console.WriteLine(greeting);
     }
 }
 ```
@@ -59,16 +61,18 @@ Currently the following hooks are supported:
 ## Shared states
 Sometimes you may want to have shared states across multiple replicas. You can achieve this by using a third-party state storage like Redis or a relational database.
 
-RabbitRPC also provides a simple state storage interface which allows you to access different state storage providers. The interface supports transactions and optimistic concurrency control. Currently, only in-memory and SQLite providers are implemented for developement and test purpose.
+RabbitRPC also provides a simple state storage interface which allows you to access different state storage providers. The interface supports transactions and optimistic concurrency control.
 
 To access shared states inside your RPC serivce, simply use `StateContext` property:
 ```csharp
 await StateContext.GetAsync<long>("counter", cancellationToken);
 ```
 
-RabbitRPC uses in-memory provider by default. To use a different provider, you need to register the state context on startup with:
+You can also leverage the `RetryOnConcurrencyErrorAttribute` action filter to perform concurrency control. The filter will detect any concurrency error occurred during the action execution, and will re-execute the action to retry automatically.
+
+RabbitRPC uses a in-memory provider by default. With the in-memory provider, states cannot be shared among replicas. To use a different provider, you need to register the state context on startup with:
 ```csharp
-services.AddSqliteStateContext("Data Source=states.db");
+services.AddEntityFrameworkCoreStateContext(options => options.UseSqlite("Data Source=states.db"));
 ```
 
 ## Distributed events
@@ -120,19 +124,19 @@ Similar to RPC services, work item handlers also support load balancing by defau
 # How to use
 RabbitRPC is currently under development, you can install preview packages to try out:
 ```
-dotnet add package RabbitRPC.Core --version 1.0.0-preview-2
+dotnet add package RabbitRPC.Core --version 1.0.0-preview-3
 ```
 You'll also need to install a serialization provider package using either
 ```
-dotnet add package RabbitRPC.Serialization.NewtonsoftJson --version 1.0.0-preview-2
+dotnet add package RabbitRPC.Serialization.NewtonsoftJson --version 1.0.0-preview-3
 ```
 or
 ```
-dotnet add package RabbitRPC.Serialization.MessagePack --version 1.0.0-preview-2
+dotnet add package RabbitRPC.Serialization.MessagePack --version 1.0.0-preview-3
 ```
-To share states between replicas running on the same computer, you'll need to install a SQLite state storage provider:
+To share states between replicas, you can install a EntityFrameworkCore state storage provider which supports using SQLite, Microsoft SQL Server and PostgreSQL to store shared states:
 ```
-dotnet add package RabbitRPC.States.Sqlite --version 1.0.0-preview-2
+dotnet add package RabbitRPC.States.EntityFrameworkCore --version 1.0.0-preview-3
 ```
 Please refer `samples` diretory for detailed usage information.
 To run the applications in `samples`, you'll need a working RabbitMQ instance.
