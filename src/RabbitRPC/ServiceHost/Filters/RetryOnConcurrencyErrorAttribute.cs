@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RabbitRPC.ServiceHost.Filters
 {
@@ -17,17 +18,17 @@ namespace RabbitRPC.ServiceHost.Filters
     {
         public int MaxRetries { get; set; } = 10;
 
-        public override void OnActionExecuted(IActionExecutedContext context)
-        {
-            if (context.Exception is ConcurrencyException && context.CallContext.ExecutionId <= MaxRetries)
-            {
-                context.UnhandledExceptionHandlingStrategy = ExceptionHandlingStrategy.ReExecute;
-            }
-        }
+        public int BackoffTime { get; set; } = 0;
 
-        public override void OnActionExecuting(IActionExecutingContext context)
+        public override async Task OnActionExecutionAsync(IActionExecutingContext context, ActionExecutionDelegate next)
         {
-            
+            var result = await next();
+
+            if (result.Exception is ConcurrencyException && context.CallContext.ExecutionId <= MaxRetries)
+            {
+                result.UnhandledExceptionHandlingStrategy = ExceptionHandlingStrategy.ReExecute;
+                await Task.Delay(BackoffTime, context.CallContext.RequestAborted);
+            }
         }
     }
 }

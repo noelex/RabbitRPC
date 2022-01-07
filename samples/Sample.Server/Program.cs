@@ -14,8 +14,8 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         {
             services.AddMessagePackSerializationProvider();
             services.AddRabbitMQConnectionProvider("amqp://guest:guest@localhost/");
-            services.AddEntityFrameworkCoreStateContext(options => options.UseSqlite("Data Source=states.db"));
-            //services.AddEntityFrameworkCoreStateContext(options => options.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Database=RabbitRPCStates"));
+            //services.AddEntityFrameworkCoreStateContext(options => options.UseSqlite("Data Source=states.db"));
+            services.AddEntityFrameworkCoreStateContext(options => options.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Database=RabbitRPCStates"));
             services.AddRabbitServiceHost(options =>
             {
                 options.AddServicesFromAssembly();
@@ -74,7 +74,7 @@ class TestService : RabbitService, ITestService
         await StateContext.PutAsync("enumState", e);
     }
 
-    [RetryOnConcurrencyError]
+    [RetryOnConcurrencyError(BackoffTime = 100)]
     public async Task<long> IncrementAsync(int delay, CancellationToken cancellationToken = default)
     {
         await Task.Delay(delay, cancellationToken);
@@ -87,7 +87,7 @@ class TestService : RabbitService, ITestService
         return newV;
     }
 
-    [RetryOnConcurrencyError]
+    [RetryOnConcurrencyError(BackoffTime = 100)]
     public async Task<long> DecrementAsync(int delay, CancellationToken cancellationToken = default)
     {
         await Task.Delay(delay, cancellationToken);
