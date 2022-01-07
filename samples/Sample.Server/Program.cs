@@ -74,7 +74,7 @@ class TestService : RabbitService, ITestService
         await StateContext.PutAsync("enumState", e);
     }
 
-    [RetryOnConcurrencyError(BackoffTime = 100)]
+    [RetryOnConcurrencyError(ScaleFactor = 100)]
     public async Task<long> IncrementAsync(int delay, CancellationToken cancellationToken = default)
     {
         await Task.Delay(delay, cancellationToken);
@@ -87,7 +87,7 @@ class TestService : RabbitService, ITestService
         return newV;
     }
 
-    [RetryOnConcurrencyError(BackoffTime = 100)]
+    [RetryOnConcurrencyError(ScaleFactor = 100)]
     public async Task<long> DecrementAsync(int delay, CancellationToken cancellationToken = default)
     {
         await Task.Delay(delay, cancellationToken);
