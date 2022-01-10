@@ -13,7 +13,7 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
 
             services.AddMessagePackSerializationProvider();
             services.AddRabbitMQConnectionProvider("amqp://guest:guest@localhost/");
-            services.AddRabbitServiceProxy(typeof(ITestService).Assembly);
+            services.AddRabbitServiceClient(typeof(ITestService).Assembly);
         });
 
 CreateHostBuilder(args).Build().Run();
