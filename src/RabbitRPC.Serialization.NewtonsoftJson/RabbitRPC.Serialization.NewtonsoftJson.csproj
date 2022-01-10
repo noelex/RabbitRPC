@@ -4,6 +4,14 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
+		<Description>
+RabbitRPC is a lightweight communication library for microservices and distributed applications built on top of RabbitMQ. It supports strongly-typed RPC services and clients, client side and server side request filtering, shared states, type-safe distrbuted events and durable work queues.
+
+This package adds support for using Newtonsoft.Json to serialize request and response messages in RabbitRPC.
+You can enable MessagePack serialization by using the following code:
+
+services.AddJsonSerializationProvider();
+		</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

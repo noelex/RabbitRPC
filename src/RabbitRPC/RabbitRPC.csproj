@@ -5,6 +5,11 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
 		<PackageId>RabbitRPC.Core</PackageId>
+		<Description>
+RabbitRPC is a lightweight communication library for microservices and distributed applications built on top of RabbitMQ. It supports strongly-typed RPC services and clients, client side and server side request filtering, shared states, type-safe distrbuted events and durable work queues.
+
+This package contains only core server and client components of RabbitRPC. You'll also need to install at least one serialization provider package (RabbitRPC.Serialization.*) to get started.
+		</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

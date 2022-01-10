@@ -9,12 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+    <PackageReference Include="RabbitRPC.Core" Version="1.0.0-preview-7" />
+    <PackageReference Include="RabbitRPC.Serialization.MessagePack" Version="1.0.0-preview-7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RabbitRPC.Serialization.MessagePack\RabbitRPC.Serialization.MessagePack.csproj" />
-    <ProjectReference Include="..\..\src\RabbitRPC\RabbitRPC.csproj" />
-    <ProjectReference Include="..\Sample.Shared\Sample.Shared.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
 </Project>

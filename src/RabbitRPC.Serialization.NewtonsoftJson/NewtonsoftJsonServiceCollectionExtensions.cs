@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class ServiceCollectionExtensions
+    public static class NewtonsoftJsonServiceCollectionExtensions
     {
         public static IServiceCollection AddJsonSerializationProvider(this IServiceCollection services)
         {

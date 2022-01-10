@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,13 +11,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+    <PackageReference Include="RabbitRPC.Serialization.MessagePack" Version="1.0.0-preview-7" />
+    <PackageReference Include="RabbitRPC.States.EntityFrameworkCore" Version="1.0.0-preview-7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RabbitRPC.Serialization.MessagePack\RabbitRPC.Serialization.MessagePack.csproj" />
-    <ProjectReference Include="..\..\src\RabbitRPC.States.EntityFrameworkCore\RabbitRPC.States.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\src\RabbitRPC\RabbitRPC.csproj" />
-    <ProjectReference Include="..\Sample.Shared\Sample.Shared.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
 </Project>

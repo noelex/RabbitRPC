@@ -11,6 +11,7 @@
 		<Product>RabbitRPC</Product>
 		<Copyright>Copyright (c) 2022 RabbitRPC contributors</Copyright>
 		<VersionPrefix>1.0.0</VersionPrefix>
+		<PackageTags>RabbitMQ, Rabbit, RPC, Messaging, Remoting, Microservice</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup >

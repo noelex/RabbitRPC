@@ -1,7 +1,7 @@
 # RabbitRPC
 > This repository is a work-in-progress.
 
-RabbitRPC is a simplistic communication library based on RabbitMQ for microservices and distributed applications built with .NET.
+RabbitRPC is a lightweight .NET communication library for microservices and distributed applications built on top of RabbitMQ.
 
 RabbitRPC aims to simplify the development and deployment of small and mid-sized distributed applications by providing zero configuration communication primitives including remote procedure call, distributed events, shared states and distributed work queues.
 
@@ -124,19 +124,19 @@ Similar to RPC services, work item handlers also support load balancing by defau
 # How to use
 RabbitRPC is currently under development, you can install preview packages to try out:
 ```
-dotnet add package RabbitRPC.Core --version 1.0.0-preview-3
+dotnet add package RabbitRPC.Core --prerelease
 ```
 You'll also need to install a serialization provider package using either
 ```
-dotnet add package RabbitRPC.Serialization.NewtonsoftJson --version 1.0.0-preview-3
+dotnet add package RabbitRPC.Serialization.NewtonsoftJson --prerelease
 ```
 or
 ```
-dotnet add package RabbitRPC.Serialization.MessagePack --version 1.0.0-preview-3
+dotnet add package RabbitRPC.Serialization.MessagePack --prerelease
 ```
 To share states between replicas, you can install a EntityFrameworkCore state storage provider which supports using SQLite, Microsoft SQL Server and PostgreSQL to store shared states:
 ```
-dotnet add package RabbitRPC.States.EntityFrameworkCore --version 1.0.0-preview-3
+dotnet add package RabbitRPC.States.EntityFrameworkCore --prerelease
 ```
 Please refer `samples` diretory for detailed usage information.
 To run the applications in `samples`, you'll need a working RabbitMQ instance.

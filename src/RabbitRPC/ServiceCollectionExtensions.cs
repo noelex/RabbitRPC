@@ -1,11 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using RabbitRPC;
 using RabbitRPC.WorkQueues;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -13,15 +10,15 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddRabbitMQConnectionProvider(this IServiceCollection services, string rabbitMQServerUri)
             => services.AddSingleton<IRabbitMQConnectionProvider>(sp => new DefaultRabbitMQConnectionProvider(new ConnectionFactory
-                {
-                    Uri = new Uri(rabbitMQServerUri),
-                    DispatchConsumersAsync = true
-                }));
+            {
+                Uri = new Uri(rabbitMQServerUri),
+                DispatchConsumersAsync = true
+            }));
 
         public static IServiceCollection AddRabbitMQConnectionProvider(this IServiceCollection services, IConnectionFactory connectionFactory)
             => services.AddSingleton<IRabbitMQConnectionProvider>(sp => new DefaultRabbitMQConnectionProvider(connectionFactory));
 
-        public static IServiceCollection AddRabbitMQConnectionProvider<T>(this IServiceCollection services) where T :class, IRabbitMQConnectionProvider
+        public static IServiceCollection AddRabbitMQConnectionProvider<T>(this IServiceCollection services) where T : class, IRabbitMQConnectionProvider
             => services.AddSingleton<IRabbitMQConnectionProvider, T>();
 
         public static IServiceCollection AddWorkQueue(this IServiceCollection services, Action<WorkQueueOptionsBuilder>? configure = null)
@@ -36,6 +33,16 @@ namespace Microsoft.Extensions.DependencyInjection
             configure?.Invoke(builder);
 
             return services.AddSingleton(builder.Build());
+        }
+
+        public static IServiceCollection AddEventBus(this IServiceCollection services)
+        {
+            services.AddSingleton<RabbitEventBus>();
+            services.AddSingleton<IRabbitEventBus>(sp => sp.GetRequiredService<RabbitEventBus>());
+            services.AddSingleton<IHostedEventBusFactory, HostedEventBusFactory>();
+            services.AddHostedService(x => x.GetRequiredService<RabbitEventBus>());
+
+            return services;
         }
 
         internal static bool TryAddSingleton<TService, TImplementation>(this IServiceCollection services)

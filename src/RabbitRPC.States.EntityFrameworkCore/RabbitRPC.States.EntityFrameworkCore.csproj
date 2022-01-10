@@ -1,9 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="$(ProjectDir)..\\ProjectBuildProperties.targets"/>
+	<Import Project="$(ProjectDir)..\\ProjectBuildProperties.targets" />
 	
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
+		<Description>
+RabbitRPC is a lightweight communication library for microservices and distributed applications built on top of RabbitMQ. It supports strongly-typed RPC services and clients, client side and server side request filtering, shared states, type-safe distrbuted events and durable work queues.
+
+This package adds support for using EntityFrameworkCore as the underlying storage provider for RabbitRPC.States.IStateContext, which allows you to share states among replicas.
+You can enable EntityFrameworkCore storage by using the following code:
+
+services.AddEntityFrameworkCoreStateContext(...);
+		</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
