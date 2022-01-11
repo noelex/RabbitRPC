@@ -4,9 +4,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RabbitRPC.ServiceHost;
-using RabbitRPC.ServiceHost.Filters;
 using RabbitRPC.Serialization;
+using RabbitRPC.ServiceHost.Filters;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -17,7 +16,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using ServiceDescriptor = RabbitRPC.ServiceHost.ServiceDescriptor;
 
 namespace RabbitRPC.ServiceHost
 {
@@ -68,7 +66,7 @@ namespace RabbitRPC.ServiceHost
         {
             _logger.LogInformation("RabbitServiceHost is starting...");
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -92,6 +90,8 @@ namespace RabbitRPC.ServiceHost
                         BindQueue(_invokeChannel, _cancellationChannel, svc.Value);
                     }
 
+                    _logger.LogInformation("RabbitServiceHost started (HostId: {HostId}).", _hostId);
+
                     break;
                 }
                 catch (Exception ex)
@@ -107,12 +107,10 @@ namespace RabbitRPC.ServiceHost
             }
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _ = ConnectLoopAsync(cancellationToken);
-            Task.Run(() => ReadChannelAsync(_stopSignal.Token));
-
-            return Task.CompletedTask;
+            await ConnectLoopAsync(cancellationToken);
+            _ = Task.Run(() => ReadChannelAsync(_stopSignal.Token));
         }
 
         private async Task OnInvokeRequestAsync(object sender, BasicDeliverEventArgs ea)
@@ -181,7 +179,7 @@ namespace RabbitRPC.ServiceHost
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var item= await _requestChannel.Reader.ReadAsync(cancellationToken);
+                var item = await _requestChannel.Reader.ReadAsync(cancellationToken);
                 _ = ExecuteRequestAsync(item.RoutingKey, item.DeliveryTag, item.BasicProperties, item.Body);
             }
         }
@@ -311,8 +309,8 @@ namespace RabbitRPC.ServiceHost
 
                 var rs = rpcContext.ResponseBody.Exception != null ? "ERROR" : rpcContext.ResponseBody.IsCancelled ? "CANCELLED" : "SUCCESS";
                 _logger.LogInformation(
-                    $"Request finished in {stopWatch.Elapsed.TotalMilliseconds:F4}ms with {execution} execution(s)." +
-                    $" - Status = {rs}, BytesReceived = {body.Length}, BytesSent = {responseData.Length}");
+                    $"Request to finished in {stopWatch.Elapsed.TotalMilliseconds:F4}ms with {execution} execution(s)." +
+                    $" - Status = {rs}, BytesReceived = {body.Length}, BytesSent = {responseData.Length}, Action = {rpcContext.ServiceName}.{rpcContext.ActionName}");
             }
             catch (Exception ex)
             {
@@ -351,7 +349,7 @@ namespace RabbitRPC.ServiceHost
                 filters.Insert(0, rs);
             }
 
-            filters.Invoke<IServiceInstantiationFilter>(f => f.OnInitializeServiceInstance(actionContext, serviceInstance),_logger, nameof(IServiceInstantiationFilter.OnInitializeServiceInstance));
+            filters.Invoke<IServiceInstantiationFilter>(f => f.OnInitializeServiceInstance(actionContext, serviceInstance), _logger, nameof(IServiceInstantiationFilter.OnInitializeServiceInstance));
 
             var parameters = new Dictionary<string, object?>();
             filters.Invoke<IParameterBindingFilter>(f => f.OnBindParameters(actionContext, parameters), _logger, nameof(IParameterBindingFilter.OnBindParameters));
@@ -384,7 +382,7 @@ namespace RabbitRPC.ServiceHost
 
             async Task<IActionExecutedContext> ExecuteActionAsync()
             {
-                
+
                 filters.Not<IAsyncActionFilter>().Invoke<IActionFilter>(x => x.OnActionExecuting(executingContext), _logger, nameof(IActionFilter.OnActionExecuting));
                 _logger.LogDebug($"Executing action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name}.");
 
@@ -424,7 +422,7 @@ namespace RabbitRPC.ServiceHost
                 stopwatch.Stop();
 
                 _logger.LogDebug($"Executed action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name} " +
-                    $"in {stopwatch.Elapsed.TotalMilliseconds:F4}ms. - Exception: {executedContext!.Exception?.GetType()?.Name?? "null"}, Result: {result}");
+                    $"in {stopwatch.Elapsed.TotalMilliseconds:F4}ms. - Exception: {executedContext!.Exception?.GetType()?.Name ?? "null"}, Result: {result}");
                 filters.Not<IAsyncActionFilter>().Invoke<IActionFilter>(x => x.OnActionExecuted(executedContext), _logger, nameof(IActionFilter.OnActionExecuted));
 
                 return executedContext;

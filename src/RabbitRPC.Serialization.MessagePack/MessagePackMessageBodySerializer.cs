@@ -11,7 +11,13 @@ namespace RabbitRPC.Serialization.MessagePack
     {
         private static readonly MessagePackSerializerOptions _options =
             MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
-            .WithResolver(CompositeResolver.Create(MessagePackExceptionResolver.Instance, ContractlessStandardResolverAllowPrivate.Instance));
+            .WithResolver(CompositeResolver.Create(
+                MessagePackExceptionResolver.Instance,
+                NativeDateTimeResolver.Instance,
+                BuiltinResolver.Instance,
+                AttributeFormatterResolver.Instance,
+                TypelessObjectResolver.Instance,
+                ContractlessStandardResolverAllowPrivate.Instance));
 
         //ContractlessStandardResolverAllowPrivate
 

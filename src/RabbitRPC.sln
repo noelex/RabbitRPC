@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitRPC.Serialization.New
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitRPC.Serialization.MessagePack", "RabbitRPC.Serialization.MessagePack\RabbitRPC.Serialization.MessagePack.csproj", "{956FC07D-55B3-4788-9C0A-4800A7751C91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitRPC.States.EntityFrameworkCore", "RabbitRPC.States.EntityFrameworkCore\RabbitRPC.States.EntityFrameworkCore.csproj", "{3311E060-BD4F-41C1-9099-56B421ECAB42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitRPC.States.EntityFrameworkCore", "RabbitRPC.States.EntityFrameworkCore\RabbitRPC.States.EntityFrameworkCore.csproj", "{3311E060-BD4F-41C1-9099-56B421ECAB42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitRPC.Client.Filters;
 using RabbitRPC.Serialization;
@@ -23,34 +24,54 @@ namespace RabbitRPC.Client
         private RabbitServiceClientOptions? _options;
         private string? _responseQueue;
         private bool _isInitialized = false;
+        private ILogger? _logger;
 
         private TimeSpan _defaultTimeout = TimeSpan.FromMinutes(2);
 
-        public void Initialize(IRabbitMQConnectionProvider connectionProvider, IMessageSerializationProvider messageSerializationProvider, RabbitServiceClientOptions options)
+        public void Initialize(ILoggerFactory loggerFactory, IRabbitMQConnectionProvider connectionProvider, IMessageSerializationProvider messageSerializationProvider, RabbitServiceClientOptions options)
         {
+            _logger = loggerFactory.CreateLogger(LoggerCategory.Proxy);
             _options = options;
             _messageBodyFactory = messageSerializationProvider.CreateMessageBodyFactory();
             _messageBodySerializer = messageSerializationProvider.CreateMessageBodySerializer();
 
-            _channel = connectionProvider.CreateConnection().CreateModel();
-            _responseQueue = _channel.QueueDeclare().QueueName;
+            _ = ConnectLoopAsync(connectionProvider);
+        }
 
-            _channel.ExchangeDeclare(DefaultManagementExchangeName, "fanout");
-
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.Received += (model, ea) =>
+        private async Task ConnectLoopAsync(IRabbitMQConnectionProvider connectionProvider)
+        {
+            while (true)
             {
-                if (_requests.TryGetValue(ea.BasicProperties.CorrelationId, out var tcs))
+                try
                 {
-                    tcs.TrySetResult(ea);
+                    _channel = connectionProvider.CreateConnection().CreateModel();
+                    _responseQueue = _channel.QueueDeclare().QueueName;
+
+                    _channel.ExchangeDeclare(DefaultManagementExchangeName, "fanout");
+
+                    var consumer = new AsyncEventingBasicConsumer(_channel);
+                    consumer.Received += (model, ea) =>
+                    {
+                        if (_requests.TryGetValue(ea.BasicProperties.CorrelationId, out var tcs))
+                        {
+                            tcs.TrySetResult(ea);
+                        }
+
+                        return Task.CompletedTask;
+                    };
+                    _channel.BasicConsume(_responseQueue, true, consumer);
+                    _channel.BasicReturn += OnBasicReturn;
+
+                    _isInitialized = true;
+                    break;
                 }
-
-                return Task.CompletedTask;
-            };
-            _channel.BasicConsume(_responseQueue, true, consumer);
-            _channel.BasicReturn += OnBasicReturn;
-
-            _isInitialized = true;
+                catch (Exception ex)
+                {
+                    _logger!.LogError($"Failed to initialize service proxy: {ex.Message}");
+                    await Task.Delay(5000);
+                }
+                break;
+            }
         }
 
         private void OnBasicReturn(object sender, BasicReturnEventArgs e)

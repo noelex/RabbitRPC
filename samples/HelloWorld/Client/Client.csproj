@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
-    <PackageReference Include="RabbitRPC.Core" Version="1.0.0-preview-7" />
-    <PackageReference Include="RabbitRPC.Serialization.MessagePack" Version="1.0.0-preview-7" />
+    <PackageReference Include="RabbitRPC.Core" Version="1.0.0-preview-9" />
+    <PackageReference Include="RabbitRPC.Serialization.MessagePack" Version="1.0.0-preview-9" />
   </ItemGroup>
 
   <ItemGroup>

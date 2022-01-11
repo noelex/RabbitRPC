@@ -1,0 +1,18 @@
+# tye application configuration file
+# read all about it at https://github.com/dotnet/tye
+#
+# when you've given us a try, we'd love to know what you think:
+#    https://aka.ms/AA7q20u
+#
+name: helloaspnetcore
+services:
+- name: frontend
+  project: Frontend/Frontend.csproj
+- name: backend
+  project: Backend/Backend.csproj
+- name: rabbitmq
+  image: rabbitmq
+  bindings:
+  - port: 15672
+    containerPort: 5672
+    connectionString: "amqp://guest:guest@${host}:${port}/" 

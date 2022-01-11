@@ -7,15 +7,14 @@ namespace RabbitRPC
 {
     public class DefaultRabbitMQConnectionProvider : IRabbitMQConnectionProvider
     {
-        private readonly IConnection _connection;
+        private IConnection? _connection;
         private readonly IConnectionFactory _connectionFactory;
 
         public DefaultRabbitMQConnectionProvider(IConnectionFactory connectionFactory)
         {
             _connectionFactory= connectionFactory;
-            _connection = connectionFactory.CreateConnection();
         }
 
-        public IConnection CreateConnection() => _connection;
+        public IConnection CreateConnection() => _connection ??= _connectionFactory.CreateConnection();
     }
 }

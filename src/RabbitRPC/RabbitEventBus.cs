@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitRPC.Serialization;
 using System;
@@ -21,18 +22,20 @@ namespace RabbitRPC
         private readonly IRabbitMQConnectionProvider _connectionProvider;
         private readonly string _exchangeName;
         private readonly bool _durable=false,_autoDelete=false;
+        private readonly ILogger _logger;
 
         private IModel? _model;
         private IBasicProperties? _defaultHeader;
 
-        public RabbitEventBus(IRabbitMQConnectionProvider connectionProvider, IMessageSerializationProvider messageSerializationProvider)
-            :this(connectionProvider, messageSerializationProvider, DefaultExchangeName, false, false)
+        public RabbitEventBus(ILoggerFactory loggerFactory, IRabbitMQConnectionProvider connectionProvider, IMessageSerializationProvider messageSerializationProvider)
+            :this(loggerFactory, connectionProvider, messageSerializationProvider, DefaultExchangeName, false, false)
         {
         }
 
-        internal RabbitEventBus(IRabbitMQConnectionProvider connectionProvider,
+        internal RabbitEventBus(ILoggerFactory loggerFactory, IRabbitMQConnectionProvider connectionProvider,
             IMessageSerializationProvider messageSerializationProvider, string exchangeName, bool durable = false, bool autoDelete = false)
         {
+            _logger = loggerFactory.CreateLogger(LoggerCategory.EventBus);
             _bodySerializer = messageSerializationProvider.CreateMessageBodySerializer();
             _connectionProvider = connectionProvider;
 
@@ -76,18 +79,38 @@ namespace RabbitRPC
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var conn = _connectionProvider.CreateConnection();
-            _model = conn.CreateModel();
-            _defaultHeader = _model.CreateBasicProperties();
+            return ConnectLoopAsync(cancellationToken);
+        }
 
-            _model.ExchangeDeclare(_exchangeName, "topic", _durable, _autoDelete);
+        private async Task ConnectLoopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("RabbitEventBus is starting...");
 
-            foreach(var (_,sub) in _subjects)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                sub.OnConnected(_model);
-            }
+                try
+                {
+                    var conn = _connectionProvider.CreateConnection();
+                    _model = conn.CreateModel();
+                    _defaultHeader = _model.CreateBasicProperties();
 
-            return Task.CompletedTask;
+                    _model.ExchangeDeclare(_exchangeName, "topic", _durable, _autoDelete);
+
+                    foreach (var (_, sub) in _subjects)
+                    {
+                        sub.OnConnected(_model);
+                    }
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, "Failed to start RabbitEventBus: " + ex.Message);
+                    _model?.Dispose();
+                }
+
+                await Task.Delay(10000, cancellationToken);
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
