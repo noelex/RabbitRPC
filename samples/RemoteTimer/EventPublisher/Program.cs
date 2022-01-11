@@ -14,7 +14,7 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         {
             services.AddMessagePackSerializationProvider();
             services.AddRabbitMQConnectionProvider("amqp://guest:guest@localhost/");
-            services.AddWorkQueue();
+            services.AddEventBus();
 
             services.AddHostedService<TimerService>();
         });
