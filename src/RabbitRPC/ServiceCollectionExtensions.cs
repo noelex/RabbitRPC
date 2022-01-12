@@ -35,15 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSingleton(builder.Build());
         }
 
-        public static IServiceCollection AddEventBus(this IServiceCollection services)
-        {
-            services.AddSingleton<RabbitEventBus>();
-            services.AddSingleton<IRabbitEventBus>(sp => sp.GetRequiredService<RabbitEventBus>());
-            services.AddSingleton<IHostedEventBusFactory, HostedEventBusFactory>();
-            services.AddHostedService(x => x.GetRequiredService<RabbitEventBus>());
-
-            return services;
-        }
+        public static IServiceCollection AddEventBus(this IServiceCollection services) => services.TryAddEventBus();
 
         internal static bool TryAddSingleton<TService, TImplementation>(this IServiceCollection services)
             where TImplementation : class, TService

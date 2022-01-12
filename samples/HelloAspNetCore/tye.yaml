@@ -10,6 +10,7 @@ services:
   project: Frontend/Frontend.csproj
 - name: backend
   project: Backend/Backend.csproj
+  replicas: 3
 - name: rabbitmq
   image: rabbitmq
   bindings:

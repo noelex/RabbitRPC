@@ -78,7 +78,7 @@ namespace RabbitRPC.Client
         {
             if (_requests.TryGetValue(e.BasicProperties.CorrelationId, out var task))
             {
-                task.TrySetException(new TargetException($"No available replica found for service '{e.RoutingKey}'."));
+                task.TrySetException(new RabbitRpcClientException($"No available replica found for service '{e.RoutingKey}'."));
             }
         }
 

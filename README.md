@@ -43,13 +43,13 @@ class ClientApp
     }
 }
 ```
-No need to worry about transport, serialization and protocol. RabbitRPC will handle that for you.
+No need to worry about service discovery, transport, serialization and contracts. RabbitRPC will handle that for you.
 
 ## Automatically load-balanced
 All RabbitRPC services are by default load-balanced, no configuration is needed. You can run as many replicas as you want, on one computer or across the network. Requests to the service will be evenly distributed to all replicas in a round-robin manner.
 
 ## Request filtering
-RabbitRPC provides a ASP.NET Core MVC like request filtering pipeline, you can add custom cross-cutting concerns to your service actions by defining your own filters.
+RabbitRPC provides a ASP.NET Core MVC like request filtering pipeline, custom cross-cutting concerns can be added to your service actions by defining your own filters.
 
 Currently the following hooks are supported:
 
@@ -57,6 +57,15 @@ Currently the following hooks are supported:
 - `OnBindParameters`: Read parameters from raw request and bind them to action method parameters.
 - `OnActionExecuting`: Called before the action exectuion.
 - `OnActionExecuted`: Called after the action execution.
+
+Client proxies also supports request filtering. You can intercept, inspect and modify request and response messages before they are sent or processed.
+
+Client filters provides the following hook timings:
+
+- `OnPrepareRequest`: Convert method parameters to request message and add custom out-of-band data by using RabbitMQ message properties.
+- `OnRequestStarting`: Called before the request is sent to the server.
+- `OnResponseReceived`: Called after the response is received from the server.
+- `OnRequestCompleted`: Called when the result or error information are extracted from the response.
 
 ## Shared states
 Sometimes you may want to have shared states across multiple replicas. You can achieve this by using a third-party state storage like Redis or a relational database.
@@ -121,7 +130,7 @@ _workQueue.Post(new PrintJob($"Hello world!"));
 ```
 Similar to RPC services, work item handlers also support load balancing by default. You can have multiple work item handler which handles same work item type running in different processes or computers.
 
-# How to use
+# Getting Started
 RabbitRPC is currently under development, you can install preview packages to try out:
 ```
 dotnet add package RabbitRPC.Core --prerelease
