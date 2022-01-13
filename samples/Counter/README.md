@@ -20,7 +20,7 @@ public interface ICounterService : IRabbitService
 This time we use `RabbitServiceAttribute` and `ActionAttribute` to customize the name of the service and actions. This may be helpful when you have multiple overloads of the a method in the service contract.
 
 ## Implementing the Service
-The idea of the `CounterService` is that the service holds a counter start from 0. When `IncrementAsync` is called, the service increments the counter by 1. Similarily, the service  decrements the counter by 1 when `DecrementAsync`. Clients and inspect current value of the counter by calling `GetCounterAsync` without modifying the counter.
+The idea of the `CounterService` is that the service holds a counter start from 0. When `IncrementAsync` is called, the service increments the counter by 1. Similarily, the service  decrements the counter by 1 when `DecrementAsync` is called. Clients and inspect current value of the counter by calling `GetCounterAsync` without modifying the counter.
 
 The problem is that **all services hosted by RabbitRPC are stateless**. A service instance is created for each request by default, member variables can't survive beyond the lifetime of a request. Also the service may be hosted in different processes or even different computers, which makes it hard to share states across service replicas.
 

@@ -58,7 +58,7 @@ namespace RabbitRPC.WorkQueues
         /// Batches in a parallel batch will be processed concurrently in their own batch sessions.
         /// </summary>
         /// <remarks>
-        /// Please not that using <see cref="Isolated"/> mode does not neccesarily mean that multiple <see cref="IWorkItemHandler{T}"/> instances will be created.
+        /// Please note that using <see cref="Isolated"/> mode does not neccesarily mean that multiple <see cref="IWorkItemHandler{T}"/> instances will be created.
         /// If a <see cref="IWorkItemHandler{T}"/> is registered as a <see cref="ServiceLifetime.Singleton"/> service, it still need to guarentee thread safty since
         /// all batch sessions will be sharing a single <see cref="IWorkItemHandler{T}"/> instance.
         /// </remarks>

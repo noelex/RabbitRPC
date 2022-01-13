@@ -56,7 +56,7 @@ services.AddMessagePackSerializationProvider();
 services.AddRabbitMQConnectionProvider("amqp://guest:guest@localhost/");
 ```
 Then we register service contracts defined in `Shared` project for proxy generation:
-```
+```csharp
 services.AddRabbitServiceClient(typeof(IChatService).Assembly);
 ```
 And that's it, now we can say hello to the server:
@@ -77,7 +77,7 @@ while (!cancellationToken.IsCancellationRequested)
 }
 ```
 ## Running the Example
-To run the example, you'll need a working RabbitMQ server instance. You can deploy one by installing RabbitMQ yourself or run one in Docker (recommended).
+To run the example, you'll need a working RabbitMQ server instance. You can install one by using RabbitMQ installer or Docker (recommended).
 
 Now start a server and a client, enter something in the client and see whether the `ChatService` works as expected.
 

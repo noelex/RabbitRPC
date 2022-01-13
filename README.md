@@ -79,7 +79,7 @@ await StateContext.GetAsync<long>("counter", cancellationToken);
 
 You can also leverage the `RetryOnConcurrencyErrorAttribute` action filter to perform concurrency control. The filter will detect any concurrency error occurred during the action execution, and will re-execute the action to retry automatically.
 
-RabbitRPC uses a in-memory provider by default. With the in-memory provider, states cannot be shared among replicas. To use a different provider, you need to register the state context on startup with:
+RabbitRPC uses a in-memory provider by default. With the in-memory provider, states cannot be shared across replicas. To use a different provider, you need to register the state context on startup with:
 ```csharp
 services.AddEntityFrameworkCoreStateContext(options => options.UseSqlite("Data Source=states.db"));
 ```
@@ -147,5 +147,4 @@ To share states between replicas, you can install a EntityFrameworkCore state st
 ```
 dotnet add package RabbitRPC.States.EntityFrameworkCore --prerelease
 ```
-Please refer `samples` diretory for detailed usage information.
-To run the applications in `samples`, you'll need a working RabbitMQ instance.
+Please refer documents in [samples](samples/) diretory for detailed usage information.
