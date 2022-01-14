@@ -6,7 +6,7 @@ using System.Text;
 
 namespace RabbitRPC.ServiceHost.Filters.Internal
 {
-    internal class InjectServicePropertiesFilter : IServiceInstantiationFilter
+    internal class InjectServicePropertiesFilter : IServiceInitializationFilter
     {
         public void OnInitializeServiceInstance(IActionContext context, IRabbitService serviceInstance)
         {

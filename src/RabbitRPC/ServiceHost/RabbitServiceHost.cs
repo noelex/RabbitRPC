@@ -122,16 +122,6 @@ namespace RabbitRPC.ServiceHost
             await _requestChannel.Writer.WriteAsync(req);
         }
 
-        //private void OnInvokeRequest(object sender, BasicDeliverEventArgs ea)
-        //{
-        //    var bufferOwner = MemoryPool<byte>.Shared.Rent(ea.Body.Length);
-        //    ea.Body.CopyTo(bufferOwner.Memory);
-
-        //    var req = new RequestData(ea.RoutingKey, ea.DeliveryTag, ea.BasicProperties, bufferOwner);
-        //    _requestQueue.Enqueue(req);
-        //    _dataReady.Release();
-        //}
-
         private void OnCancelRequest(object sender, BasicDeliverEventArgs ea)
         {
             switch (ea.BasicProperties.Type)
@@ -250,7 +240,7 @@ namespace RabbitRPC.ServiceHost
 
                         if (resultContext.CallContext.RequestAborted.IsCancellationRequested)
                         {
-                            rpcContext.ResponseBody.IsCancelled = true;
+                            rpcContext.ResponseBody.IsCanceled = true;
                         }
                         else if (resultContext.Exception != null && !resultContext.ExceptionHandled)
                         {
@@ -307,7 +297,7 @@ namespace RabbitRPC.ServiceHost
 
                 stopWatch.Stop();
 
-                var rs = rpcContext.ResponseBody.Exception != null ? "ERROR" : rpcContext.ResponseBody.IsCancelled ? "CANCELLED" : "SUCCESS";
+                var rs = rpcContext.ResponseBody.Exception != null ? "ERROR" : rpcContext.ResponseBody.IsCanceled ? "CANCELLED" : "SUCCESS";
                 _logger.LogInformation(
                     $"Request to finished in {stopWatch.Elapsed.TotalMilliseconds:F4}ms with {execution} execution(s)." +
                     $" - Status = {rs}, BytesReceived = {body.Length}, BytesSent = {responseData.Length}, Action = {rpcContext.ServiceName}.{rpcContext.ActionName}");
@@ -349,81 +339,89 @@ namespace RabbitRPC.ServiceHost
                 filters.Insert(0, rs);
             }
 
-            filters.Invoke<IServiceInstantiationFilter>(f => f.OnInitializeServiceInstance(actionContext, serviceInstance), _logger, nameof(IServiceInstantiationFilter.OnInitializeServiceInstance));
-
             var parameters = new Dictionary<string, object?>();
-            filters.Invoke<IParameterBindingFilter>(f => f.OnBindParameters(actionContext, parameters), _logger, nameof(IParameterBindingFilter.OnBindParameters));
-
             var executingContext = new ActionExecutingContext(actionContext, filters, parameters, serviceInstance);
             var executedContext = new ActionExecutedContext(actionContext, filters, serviceInstance);
 
-            var next = new ActionExecutionDelegate(ExecuteActionAsync);
-            foreach (var filter in filters.OfType<IAsyncActionFilter>().Reverse())
-            {
-                var nextAction = next;
-                next = new ActionExecutionDelegate(async () =>
-                {
-                    if (!executedContext.Canceled)
-                    {
-                        await filter.OnActionExecutionAsync(executingContext, nextAction);
-                    }
+            // Build a recursive filter pipeline to invoke all filters and action method.
 
-                    return executedContext;
-                });
+            IFilterChain chain = new ChainTermination(new ActionExecutionDelegate(ExecuteActionAsync));
+            var reversedFilters = filters.AsEnumerable().Reverse().ToArray();
+
+            foreach (var filter in reversedFilters.Where(x=>x is IAsyncActionFilter || x is IActionFilter))
+            {
+                if(filter is IAsyncActionFilter af)
+                {
+                    chain = new AsyncActionFilterChain(chain, af, executingContext, executedContext);
+                }
+                else
+                {
+                    chain = new ActionFilterChain(chain, (IActionFilter)filter, executingContext, executedContext);
+                }
+            }
+            foreach (var filter in reversedFilters.OfType<IParameterBindingFilter>())
+            {
+                chain = new ParameterBindingFilterChain(chain, filter, actionContext, parameters);
+            }
+            foreach (var filter in reversedFilters.OfType<IServiceInitializationFilter>())
+            {
+                chain = new ServiceInitializationFilterChain(chain, filter, actionContext, serviceInstance);
             }
 
             var sw = Stopwatch.StartNew();
-            var result = await next();
+            await chain.ExecuteAsync();
             sw.Stop();
 
             _logger.LogDebug($"Executed action {actionContext.ServiceDescriptor.Name}.{actionContext.ActionDescriptor.Name} in {sw.Elapsed.TotalMilliseconds:F4}ms.");
 
-            return result;
+            return executedContext;
 
             async Task<IActionExecutedContext> ExecuteActionAsync()
             {
+                var stopwatch = new Stopwatch();
 
-                filters.Not<IAsyncActionFilter>().Invoke<IActionFilter>(x => x.OnActionExecuting(executingContext), _logger, nameof(IActionFilter.OnActionExecuting));
-                _logger.LogDebug($"Executing action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name}.");
-
-                var stopwatch = Stopwatch.StartNew();
-
-                object? result = null;
-                try
+                if (!executedContext.Canceled)
                 {
-                    var returnType = actionContext.ActionDescriptor.MethodInfo.ReturnType;
-                    result = actionContext.ActionDescriptor.MethodInfo.Invoke(serviceInstance, executingContext!.ActionArguments.Values.ToArray());
+                    _logger.LogDebug($"Executing action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name}.");
 
-                    if (result is Task task)
+                    stopwatch.Restart();
+
+                    object? result = null;
+                    try
                     {
-                        await task;
+                        var returnType = actionContext.ActionDescriptor.MethodInfo.ReturnType;
+                        result = actionContext.ActionDescriptor.MethodInfo.Invoke(serviceInstance, executingContext!.ActionArguments.Values.ToArray());
 
-                        if (result.GetType().IsConstructedGenericType)
+                        if (result is Task task)
                         {
-                            result = result.GetType().GetProperty("Result").GetValue(result);
+                            await task;
+
+                            if (result.GetType().IsConstructedGenericType)
+                            {
+                                result = result.GetType().GetProperty("Result").GetValue(result);
+                            }
+                            else
+                            {
+                                result = null;
+                            }
                         }
-                        else
-                        {
-                            result = null;
-                        }
+
+                        executedContext.Result = result;
+                    }
+                    catch (TargetInvocationException tie)
+                    {
+                        executedContext!.Exception = tie.InnerException;
+                    }
+                    catch (Exception ex)
+                    {
+                        executedContext!.Exception = ex;
                     }
 
-                    executedContext.Result = result;
-                }
-                catch (TargetInvocationException tie)
-                {
-                    executedContext!.Exception = tie.InnerException;
-                }
-                catch (Exception ex)
-                {
-                    executedContext!.Exception = ex;
-                }
+                    stopwatch.Stop();
 
-                stopwatch.Stop();
-
-                _logger.LogDebug($"Executed action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name} " +
+                    _logger.LogDebug($"Executed action method {actionContext.ServiceDescriptor.ServiceType.Name}.{actionContext.ActionDescriptor.MethodInfo.Name} " +
                     $"in {stopwatch.Elapsed.TotalMilliseconds:F4}ms. - Exception: {executedContext!.Exception?.GetType()?.Name ?? "null"}, Result: {result}");
-                filters.Not<IAsyncActionFilter>().Invoke<IActionFilter>(x => x.OnActionExecuted(executedContext), _logger, nameof(IActionFilter.OnActionExecuted));
+                }
 
                 return executedContext;
             }

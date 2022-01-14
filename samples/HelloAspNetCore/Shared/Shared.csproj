@@ -5,6 +5,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="RabbitRPC.Core" Version="1.0.0-preview-9" />
+		<PackageReference Include="RabbitRPC.Core" Version="1.0.0-preview-20220114.1" />
 	</ItemGroup>
 </Project>

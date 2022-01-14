@@ -110,8 +110,6 @@ namespace RabbitRPC.Client
             // Prepare request header and body
             var header = _channel!.CreateBasicProperties();
             var request = _messageBodyFactory!.CreateRequest(targetMethod.DeclaringType.FullName, targetMethod.Name, args.Length, null);
-            var prepareContext = new PrepareRequestContext(context, header, request);
-            filters.Invoke<IPrepareRequestFilter>(x => x.OnPrepareRequest(prepareContext));
 
             // Send cancellation signal to service is parent cancellation token is canceled
             var reg = cancellableTokenSource.Token.Register(() =>
@@ -132,39 +130,49 @@ namespace RabbitRPC.Client
             };
 
             // Create a recursive filter chain to process the response and invoke request filters.
+            var prepareContext = new PrepareRequestContext(context, header, request);
+            var executingContext = new RequestStartingContext(context);
+            var responseContext = new ResponseReceivedContext(context);
             var executedContext = new RequestCompletedContext(context);
-            var next = new RequestExecutionDelegate(InvokeRequestAsync);
 
-            foreach (var filter in filters.OfType<IAsyncRequestFilter>().Reverse())
+            IFilterChain chain = new ChainTermination(new RequestExecutionDelegate(InvokeRequestAsync));
+            var reversedFilters = filters.AsEnumerable().Reverse().ToArray();
+
+            foreach (var filter in reversedFilters.OfType<IResponseReceivedFilter>())
             {
-                var nextAction = next;
-                next = new RequestExecutionDelegate(async () =>
+                chain = new ResponseReceivedFilterChain(chain, filter, responseContext);
+            }
+            foreach (var filter in reversedFilters.Where(x => x is IAsyncRequestFilter || x is IRequestFilter))
+            {
+                if (filter is IAsyncRequestFilter af)
                 {
-                    if (!executedContext.Canceled)
-                    {
-                        await filter.OnRequestInvocationAsync(context, nextAction);
-                    }
+                    chain = new AsyncRequestFilterChain(chain, af, executingContext, executedContext);
+                }
+                else
+                {
+                    chain = new RequestFilterChain(chain, (IRequestFilter)filter, executingContext, executedContext);
+                }
+            }
 
-                    return executedContext;
-                });
+            foreach (var filter in reversedFilters.OfType<IPrepareRequestFilter>())
+            {
+                chain = new PrepareRequestFilterChain(chain, filter, prepareContext);
             }
 
             // Create a Task to wait for the request to complete and extract the result
             if (context.ReturnType == typeof(void))
             {
-                return WaitAsync(next, executedContext);
+                return WaitAsync(chain, executedContext);
             }
             else
             {
                 var returnValueType = context.ReturnType;
                 var invoke = typeof(RabbitServiceClient).GetMethod(nameof(WaitForResultAsync), BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(returnValueType);
-                return invoke.Invoke(this, new object[] { next, executedContext });
+                return invoke.Invoke(this, new object[] { chain, executedContext });
             }
 
             async Task<IRequestCompletedContext> InvokeRequestAsync()
             {
-                filters.Not<IAsyncRequestFilter>().Invoke<IRequestFilter>(x => x.OnRequestStarting(context));
-
                 using var timeoutCancellationToken = new CancellationTokenSource(_defaultTimeout);
                 using var ctr = timeoutCancellationToken.Token.Register(() =>
                 {
@@ -192,10 +200,11 @@ namespace RabbitRPC.Client
                         var ea = await tcs.Task;
                         var resp = _messageBodySerializer.DeserializeResponse(ea.Body);
 
-                        var responseContext = new ResponseReceivedContext(context, ea.BasicProperties, ea.Body, resp);
-                        filters.Invoke<IResponseReceivedFilter>(x => x.OnResponseReceived(responseContext));
+                        responseContext.ResponsePropterties = ea.BasicProperties;
+                        responseContext.RawData = ea.Body;
+                        responseContext.Body = resp;
 
-                        if (resp.IsCancelled)
+                        if (resp.IsCanceled)
                         {
                             executedContext.Status = RequestStatus.Aborted;
                             executedContext.Exception = new OperationCanceledException(callContext.CancellationRegistration.Token);
@@ -227,21 +236,20 @@ namespace RabbitRPC.Client
                     }
                 }
 
-                filters.Not<IAsyncRequestFilter>().Invoke<IRequestFilter>(x => x.OnRequestCompleted(executedContext));
                 return executedContext;
             }
         }
 
-        private async Task WaitAsync(RequestExecutionDelegate next, RequestCompletedContext context)
+        private async Task WaitAsync(IFilterChain next, RequestCompletedContext context)
         {
-            await next();
+            await next.ExecuteAsync();
             if (context.Exception != null && !context.ExceptionHandled)
             {
                 ExceptionDispatchInfo.Throw(context.Exception);
             }
         }
 
-        private async Task<T> WaitForResultAsync<T>(RequestExecutionDelegate next, RequestCompletedContext context)
+        private async Task<T> WaitForResultAsync<T>(IFilterChain next, RequestCompletedContext context)
         {
             await WaitAsync(next, context);
             return (T)context.Result!;

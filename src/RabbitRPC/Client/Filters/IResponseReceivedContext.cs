@@ -17,18 +17,15 @@ namespace RabbitRPC.Client.Filters
 
     internal class ResponseReceivedContext : RequestContext, IResponseReceivedContext
     {
-        public ResponseReceivedContext(IRequestContext requestContext, IBasicProperties responsePropterties, ReadOnlyMemory<byte> responseData, IResponseMessageBody body)
+        public ResponseReceivedContext(IRequestContext requestContext)
             : base(requestContext)
         {
-            ResponsePropterties = responsePropterties;
-            RawData = responseData;
-            Body = body;
         }
 
-        public IBasicProperties ResponsePropterties { get; set; }
+        public IBasicProperties ResponsePropterties { get; set; } = null!;
 
-        public ReadOnlyMemory<byte> RawData { get; set; }
+        public ReadOnlyMemory<byte> RawData { get; set; } = null!;
 
-        public IResponseMessageBody Body { get; set; }
+        public IResponseMessageBody Body { get; set; } = null!;
     }
 }

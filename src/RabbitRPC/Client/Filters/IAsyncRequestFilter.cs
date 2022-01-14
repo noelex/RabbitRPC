@@ -9,6 +9,6 @@ namespace RabbitRPC.Client.Filters
 
     public interface IAsyncRequestFilter : IProxyFilterMetadata
     {
-        Task OnRequestInvocationAsync(IRequestContext context, RequestExecutionDelegate next);
+        Task OnRequestInvocationAsync(IRequestStartingContext context, RequestExecutionDelegate next);
     }
 }

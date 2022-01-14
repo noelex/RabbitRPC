@@ -10,7 +10,7 @@ namespace RabbitRPC.ServiceHost
     /// <summary>
     /// Base class for RabbitRPC services.
     /// </summary>
-    public abstract class RabbitService: IFilterMetadata, IAsyncActionFilter, IActionFilter, IServiceInstantiationFilter, IParameterBindingFilter
+    public abstract class RabbitService: IFilterMetadata, IAsyncActionFilter, IActionFilter, IServiceInitializationFilter, IParameterBindingFilter
     {
         public IStateContext StateContext { get; set; } = null!;
 

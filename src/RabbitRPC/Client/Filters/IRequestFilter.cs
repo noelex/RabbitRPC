@@ -6,7 +6,7 @@ namespace RabbitRPC.Client.Filters
 {
     public interface IRequestFilter:IProxyFilterMetadata
     {
-        void OnRequestStarting(IRequestContext context);
+        void OnRequestStarting(IRequestStartingContext context);
 
         void OnRequestCompleted(IRequestCompletedContext context);
     }

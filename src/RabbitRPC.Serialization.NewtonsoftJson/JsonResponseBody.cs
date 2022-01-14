@@ -23,7 +23,7 @@ namespace RabbitRPC.Serialization.NewtonsoftJson
 
         public Exception? Exception { get => _exception; set => _exception = value; }
 
-        public bool IsCancelled { get => _isCanceled; set => _isCanceled = value; }
+        public bool IsCanceled { get => _isCanceled; set => _isCanceled = value; }
 
         public object? GetByRefParameter(int position, string paramName, Type targetType)
         {

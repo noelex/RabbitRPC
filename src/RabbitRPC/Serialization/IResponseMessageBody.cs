@@ -13,6 +13,6 @@ namespace RabbitRPC.Serialization
 
         Exception? Exception { get; set; }
 
-        bool IsCancelled { get; set; }
+        bool IsCanceled { get; set; }
     }
 }

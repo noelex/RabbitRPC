@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RabbitRPC.ServiceHost.Filters
 {
@@ -11,10 +12,12 @@ namespace RabbitRPC.ServiceHost.Filters
             Service = service;
         }
 
-        public IDictionary<string, object?> ActionArguments { get; }
+        public virtual IDictionary<string, object?> ActionArguments { get; }
 
         public virtual IRabbitService Service { get; }
 
         public virtual object? Result { get; set; }
+
+        public virtual Exception? Exception { get; set; }
     }
 }

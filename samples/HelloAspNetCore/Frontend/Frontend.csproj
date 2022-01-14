@@ -8,8 +8,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Tye.Extensions.Configuration" Version="0.10.0-alpha.21420.1" />
-		<PackageReference Include="RabbitRPC.Core" Version="1.0.0-preview-9" />
-		<PackageReference Include="RabbitRPC.Serialization.MessagePack" Version="1.0.0-preview-9" />
+		<PackageReference Include="RabbitRPC.Core" Version="1.0.0-preview-20220114.1" />
+		<PackageReference Include="RabbitRPC.Serialization.MessagePack" Version="1.0.0-preview-20220114.1" />
 	</ItemGroup>
 
 	<ItemGroup>
