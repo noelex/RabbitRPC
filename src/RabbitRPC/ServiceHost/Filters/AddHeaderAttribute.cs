@@ -1,7 +1,6 @@
-﻿using RabbitRPC.ServiceHost.Filters;
-using System;
+﻿using System;
 
-namespace RabbitRPC.Client.Filters
+namespace RabbitRPC.ServiceHost.Filters
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class AddHeaderAttribute : ActionFilterAttribute
