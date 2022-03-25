@@ -299,7 +299,7 @@ namespace RabbitRPC.ServiceHost
 
                 var rs = rpcContext.ResponseBody.Exception != null ? "ERROR" : rpcContext.ResponseBody.IsCanceled ? "CANCELLED" : "SUCCESS";
                 _logger.LogInformation(
-                    $"Request to finished in {stopWatch.Elapsed.TotalMilliseconds:F4}ms with {execution} execution(s)." +
+                    $"Request finished in {stopWatch.Elapsed.TotalMilliseconds:F4}ms with {execution} execution(s)." +
                     $" - Status = {rs}, BytesReceived = {body.Length}, BytesSent = {responseData.Length}, Action = {rpcContext.ServiceName}.{rpcContext.ActionName}");
             }
             catch (Exception ex)

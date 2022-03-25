@@ -9,7 +9,7 @@ namespace RabbitRPC.ServiceHost
 {
     public class RabbitServiceHostOptions
     {
-        internal IServiceCollection Services { get; set; } = null!;
+        public IServiceCollection Services { get; set; } = null!;
 
         public int DispatchConcurrency { get; set; } = 16;
 
