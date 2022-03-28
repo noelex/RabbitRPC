@@ -46,7 +46,7 @@ namespace RabbitRPC.ServiceHost.Filters
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int CalculateBackoffTime(int n) => Math.Min(
             (int)Math.Pow(2, n - 1) * ScaleFactor + 
-                MaximumJitter <= 0 ? 0 : RandomNumberGenerator.GetInt32(MaximumJitter),
+                (MaximumJitter <= 0 ? 0 : RandomNumberGenerator.GetInt32(MaximumJitter)),
             MaximumBackoffTime);
     }
 }
