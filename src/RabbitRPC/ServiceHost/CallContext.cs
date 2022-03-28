@@ -31,5 +31,7 @@ namespace RabbitRPC.ServiceHost
         public string RequestId { get; set; } = null!;
 
         public int ExecutionId { get; set; }
+
+        public object? ServiceInstance { get; set; }
     }
 }

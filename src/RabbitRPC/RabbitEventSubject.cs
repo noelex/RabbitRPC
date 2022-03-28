@@ -16,7 +16,7 @@ namespace RabbitRPC
     {
         private static readonly ConcurrentDictionary<string, Type> _eventTypeMap = new ConcurrentDictionary<string, Type>();
 
-        private readonly Dictionary<Guid, IObserver<T>> _observers = new Dictionary<Guid, IObserver<T>>();
+        private readonly ConcurrentDictionary<Guid, IObserver<T>> _observers = new ConcurrentDictionary<Guid, IObserver<T>>();
         private readonly string _exchangeName, _routingKey;
         private readonly IMessageBodySerializer _bodySerializer;
         private readonly bool _autoAck;
@@ -96,7 +96,7 @@ namespace RabbitRPC
             var subscriptionId = Guid.NewGuid();
             _observers[subscriptionId] = observer;
 
-            return new DelegateDisposable(() => _observers.Remove(subscriptionId));
+            return new DelegateDisposable(() => _observers.TryRemove(subscriptionId,out _));
         }
 
         public void OnNext(T next)

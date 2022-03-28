@@ -32,5 +32,7 @@ namespace RabbitRPC.ServiceHost
         IServiceProvider RequestServices { get; }
 
         IDictionary<string, object?> Items { get; }
+
+        object? ServiceInstance { get; }
     }
 }

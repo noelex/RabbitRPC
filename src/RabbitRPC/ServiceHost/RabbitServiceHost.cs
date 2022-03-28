@@ -236,7 +236,7 @@ namespace RabbitRPC.ServiceHost
                         };
 
                         stopWatch.Start();
-                        var resultContext = await InvokeActionAsync(actionContext);
+                        var resultContext = await InvokeActionAsync(rpcContext, actionContext);
 
                         if (resultContext.CallContext.RequestAborted.IsCancellationRequested)
                         {
@@ -322,9 +322,10 @@ namespace RabbitRPC.ServiceHost
             }
         }
 
-        private async Task<IActionExecutedContext> InvokeActionAsync(ActionContext actionContext)
+        private async Task<IActionExecutedContext> InvokeActionAsync(CallContext cc, ActionContext actionContext)
         {
             var serviceInstance = (IRabbitService)actionContext.CallContext.RequestServices.GetRequiredService(actionContext.ServiceDescriptor.ServiceType);
+            cc.ServiceInstance = serviceInstance;
 
             var filters = actionContext.ActionDescriptor.Filters
                .Concat(actionContext.ServiceDescriptor.Filters)

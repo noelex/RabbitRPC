@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped(sp =>
             {
                 var factory = sp.GetRequiredService<IStateContextFactory>();
-                return factory.CreateStateContext(sp.GetRequiredService<ICallContextAccessor>().CallContext!.ServiceName);
+                return factory.CreateStateContext(sp.GetRequiredService<ICallContextAccessor>().CallContext!.ServiceInstance!.GetType().FullName);
             });
 
             return services
