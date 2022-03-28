@@ -22,27 +22,24 @@ namespace RabbitRPC.ServiceHost
         {
             if (serviceType == null) throw new ArgumentNullException(nameof(serviceType));
 
-
             var serviceInterfaces = serviceType.GetInterfaces()
-                .Where(x => x != typeof(IRabbitService) && typeof(IRabbitService).IsAssignableFrom(x) && x.IsPublic)
+                .Where(x => x != typeof(IRabbitService) && typeof(IRabbitService).IsAssignableFrom(x))
                 .ToArray();
 
-            if (serviceInterfaces.Length != 1)
-            {
-                throw new ArgumentException($"Service type '{serviceType.FullName}' must have exactly one service interface which implements IRabbitService.", nameof(serviceType));
-            }
-
-            var serviceInterface = serviceInterfaces[0];
-
-            var name = serviceInterface.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? serviceInterface.FullName;
-
-            if (options.ServiceDescriptors.ContainsKey(name))
-            {
-                throw new ArgumentException($"A service with name '{name}' is already registered.", nameof(serviceType));
-            }
-
             options.Services.AddScoped(serviceType);
-            options.ServiceDescriptors.Add(name, new ServiceDescriptor(serviceType.GetInterfaceMap(serviceInterface)));
+
+            foreach (var serviceInterface in serviceInterfaces)
+            {
+                var name = serviceInterface.GetCustomAttribute<RabbitServiceAttribute>()?.Name ?? serviceInterface.FullName;
+
+                if (options.ServiceDescriptors.ContainsKey(name))
+                {
+                    throw new ArgumentException($"A service with name '{name}' is already registered.", nameof(serviceType));
+                }
+
+                options.ServiceDescriptors.Add(name, new ServiceDescriptor(serviceType.GetInterfaceMap(serviceInterface)));
+            }
+
 
             return options;
         }
